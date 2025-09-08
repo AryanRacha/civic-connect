@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
@@ -15,9 +16,14 @@ import {
   Users,
 } from "lucide-react"
 
-export default function GrievanceLandingPage() {
+// You can also add 'use client' if this component needs to be interactive,
+// e.g., if you add state or event handlers later.
+// "use client";
+
+export default function Home() {
   return (
     <div className="min-h-screen bg-white">
+      {/* All of your existing JSX code */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
