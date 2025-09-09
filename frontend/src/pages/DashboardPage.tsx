@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
+import ChatbotInterface from "../components/ChatbotInterface"
 import {
   Home,
   Plus,
@@ -23,9 +24,10 @@ import {
 
 interface DashboardPageProps {
   onNavigateToLanding: () => void
+  onNavigateToReportIssue?: () => void
 }
 
-export default function DashboardPage({ onNavigateToLanding }: DashboardPageProps) {
+export default function DashboardPage({ onNavigateToLanding, onNavigateToReportIssue }: DashboardPageProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -131,13 +133,13 @@ export default function DashboardPage({ onNavigateToLanding }: DashboardPageProp
             <Home className="w-5 h-5" />
             <span className="font-medium">Dashboard</span>
           </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          <button
+            onClick={onNavigateToReportIssue}
+            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Report Issue</span>
-          </a>
+          </button>
           <a
             href="#"
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -188,7 +190,7 @@ export default function DashboardPage({ onNavigateToLanding }: DashboardPageProp
                   Your voice matters. Let's build a better community together.
                 </p>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3" onClick={onNavigateToReportIssue}>
                 <Plus className="w-5 h-5 mr-2" />
                 Report New Issue
               </Button>
@@ -394,6 +396,9 @@ export default function DashboardPage({ onNavigateToLanding }: DashboardPageProp
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
+
+      {/* Chatbot Interface */}
+      <ChatbotInterface />
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Input } from "../components/ui/Input"
+import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/Label"
 import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react"
 
@@ -48,6 +48,8 @@ export default function SignupPage({ onNavigateToLanding, onNavigateToLogin }: S
     confirmPassword: null,
   })
   const [passwordMatchError, setPasswordMatchError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const validateField = (field: FieldName, value: string): boolean => {
     switch (field) {
@@ -77,7 +79,7 @@ export default function SignupPage({ onNavigateToLanding, onNavigateToLogin }: S
     } else {
       setValidation((prev) => ({ ...prev, [field]: null }))
     }
-    // Add logic for password mismatch message
+
     if (field === "confirmPassword" || field === "password") {
       if (field === "confirmPassword" && value.length > 0 && value !== formData.password) {
         setPasswordMatchError("Passwords do not match.")
@@ -98,6 +100,47 @@ export default function SignupPage({ onNavigateToLanding, onNavigateToLogin }: S
     if (isValid === null) return null
     return isValid ? <CheckCircle className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+
+    const isFormValid = Object.values(validation).every((isValid) => isValid) && formData.password === formData.confirmPassword;
+    if (!isFormValid) {
+      setErrorMessage("Please correct the form errors.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          phone_no: formData.phone,
+          password: formData.password,
+          role_id: "sih_citizen", // This is the key change
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        onNavigateToLogin();
+      } else {
+        setErrorMessage(data.message || "Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error("Signup failed:", error);
+      setErrorMessage("Network error. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center p-4">
@@ -122,126 +165,136 @@ export default function SignupPage({ onNavigateToLanding, onNavigateToLogin }: S
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="space-y-4">
-            {/* Full Name */}
-            <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-                Full Name
-              </Label>
-              <div className="relative">
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="e.g., Jane Doe"
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
-                  className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <ValidationIcon isValid={validation.fullName} />
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                  Full Name
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="e.g., Jane Doe"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <ValidationIcon isValid={validation.fullName} />
+                  </div>
                 </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email ID
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="e.g., user@example.com"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <ValidationIcon isValid={validation.email} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                  Phone Number
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="e.g., 9876543210"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <ValidationIcon isValid={validation.phone} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password (min 6 characters)"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    className="pr-20 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                    <ValidationIcon isValid={validation.password} />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                  Confirm Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    className="pr-20 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                    <ValidationIcon isValid={validation.confirmPassword} />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                {passwordMatchError && <p className="text-red-500 text-sm mt-1">{passwordMatchError}</p>}
               </div>
             </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email ID
-              </Label>
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="e.g., user@example.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <ValidationIcon isValid={validation.email} />
-                </div>
-              </div>
-            </div>
+            {errorMessage && (
+              <div className="mt-4 text-center text-red-500 text-sm">{errorMessage}</div>
+            )}
 
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                Phone Number
-              </Label>
-              <div className="relative">
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="e.g., 9876543210"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <ValidationIcon isValid={validation.phone} />
-                </div>
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password (min 6 characters)"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                  className="pr-20 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                  <ValidationIcon isValid={validation.password} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                  className="pr-20 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                  <ValidationIcon isValid={validation.confirmPassword} />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-              {passwordMatchError && <p className="text-red-500 text-sm mt-1">{passwordMatchError}</p>}
-            </div>
-          </div>
-
-          <Button className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg">
-            Create Account
-          </Button>
+            <Button
+              type="submit"
+              className="w-full h-12 mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Account"}
+            </Button>
+          </form>
 
           <div className="text-center text-sm text-gray-600">
             Already have an account?{" "}
