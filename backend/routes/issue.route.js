@@ -12,7 +12,6 @@ import {
   updateIssueStatus,
   assignIssueToDept,
   deleteIssue,
-  searchIssues, // Assuming you have this controller
 } from "../controllers/issue.controller.js";
 
 const router = express.Router();
@@ -21,7 +20,6 @@ const router = express.Router();
 
 router.post("/", protectRoute, createIssue);
 router.get("/", protectRoute, getAllIssues);
-router.get("/search", protectRoute, searchIssues); // Search route
 router.get("/:id", protectRoute, getIssueById);
 router.post("/:id/report", protectRoute, addReportToIssue);
 router.post("/:id/follow", protectRoute, followIssue);

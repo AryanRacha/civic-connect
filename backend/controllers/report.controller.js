@@ -6,7 +6,7 @@ import Report from "../models/report.model.js";
 const upload = multer({ storage: multer.memoryStorage() });
 
 export const addReport = async (req, res) => {
-  const { title, description, location } = req.body;
+  const { description } = req.body;
 
   try {
     let imageUrls = [];

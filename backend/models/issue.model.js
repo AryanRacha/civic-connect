@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const issueSchema = new Schema(
@@ -56,4 +56,4 @@ const issueSchema = new Schema(
 issueSchema.index({ location: "2dsphere" });
 
 const Issue = mongoose.model("Issue", issueSchema);
-module.exports = Issue;
+export default Issue;

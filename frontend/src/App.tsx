@@ -1,12 +1,11 @@
-import React from "react"
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import LandingPage from "./pages/LandingPage"
-import SignupPage from "./pages/SignupPage"
-import DashboardPage from "./pages/DashboardPage"
-import LoginPage from "./pages/LoginPage"
-import ReportIssuePage from "./pages/ReportIssuePage"
-import BrowseIssuesPage from "./pages/BrowseIssuesPage"
-import MyProfilePage from "./pages/MyProfilePage"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import SignupPage from "./pages/SignupPage";
+import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./pages/LoginPage";
+import ReportIssuePage from "./pages/ReportIssuePage";
+import BrowseIssuesPage from "./pages/BrowseIssuesPage";
+import MyProfilePage from "./pages/MyProfilePage";
 
 function App() {
   return (
@@ -22,7 +21,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

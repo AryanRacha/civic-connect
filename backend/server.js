@@ -10,9 +10,9 @@ dotenv.config();
 
 // website routes
 import authRouter from "./routes/auth.route.js";
-import userRouter from "./routes/user.route.js";
-import reportRouter from "./routes/report.route.js";
-import issueRouter from "./routes/issue.route.js";
+// import userRouter from "./routes/user.route.js";
+// import reportRouter from "./routes/report.route.js";
+// import issueRouter from "./routes/issue.route.js";
 
 const app = express();
 
@@ -32,9 +32,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
-app.use("/api/user", userRouter);
-app.use("/api/report", reportRouter);
-app.use("/api/issue", issueRouter);
 
 app.get("/*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
