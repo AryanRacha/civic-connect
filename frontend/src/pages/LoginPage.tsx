@@ -73,12 +73,36 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle login logic here
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          [formData.loginType]: formData[formData.loginType],
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
     console.log("Login data:", formData)
     // For now, navigate to dashboard on successful login
     navigate('/dashboard')
   }
-
+catch (error) {
+  console.error('Login error:', error);
+}
+  }
   const ValidationIcon = ({ isValid }: { isValid: boolean | null }) => {
     if (isValid === null) return null
     return isValid ? <CheckCircle className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />
