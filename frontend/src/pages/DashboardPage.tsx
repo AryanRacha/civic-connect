@@ -25,9 +25,11 @@ import {
 interface DashboardPageProps {
   onNavigateToLanding: () => void
   onNavigateToReportIssue?: () => void
+  onNavigateToBrowseIssues?: () => void
+  onNavigateToMyProfile?: ()=>void;
 }
 
-export default function DashboardPage({ onNavigateToLanding, onNavigateToReportIssue }: DashboardPageProps) {
+export default function DashboardPage({ onNavigateToLanding, onNavigateToReportIssue, onNavigateToBrowseIssues , onNavigateToMyProfile}: DashboardPageProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -69,14 +71,6 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
     { id: 1, title: "Water supply disruption in Sector 15", upvotes: 89, location: "Sector 15" },
     { id: 2, title: "Traffic signal malfunction at Main Square", upvotes: 67, location: "Main Square" },
     { id: 3, title: "Park maintenance required", upvotes: 45, location: "Central Park" },
-  ]
-
-  const topCitizens = [
-    { rank: 1, name: "Priya Sharma", issues: 28, badge: "🏆" },
-    { rank: 2, name: "Rajesh Kumar", issues: 24, badge: "🥈" },
-    { rank: 3, name: "Anita Singh", issues: 19, badge: "🥉" },
-    { rank: 4, name: "Vikram Patel", issues: 16, badge: "⭐" },
-    { rank: 5, name: "Meera Joshi", issues: 14, badge: "⭐" },
   ]
 
   const getStatusColor = (status: string) => {
@@ -142,6 +136,7 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
           </button>
           <a
             href="#"
+            onClick={onNavigateToMyProfile}
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           >
             <User className="w-5 h-5" />
@@ -149,10 +144,11 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
           </a>
           <a
             href="#"
+            onClick={onNavigateToBrowseIssues}
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           >
             <Users className="w-5 h-5" />
-            <span className="font-medium">Community Hub</span>
+            <span className="font-medium">Browse Issues</span>
           </a>
         </nav>
 
@@ -364,31 +360,6 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
               </CardContent>
             </Card>
           </div>
-
-          {/* Leaderboard */}
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-2 mb-6">
-                <Award className="w-5 h-5 text-yellow-600" />
-                <h3 className="text-xl font-bold text-gray-900">Top Citizens</h3>
-                <span className="text-sm text-gray-500">Most active community members</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {topCitizens.map((citizen) => (
-                  <div
-                    key={citizen.rank}
-                    className="text-center p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border border-gray-200"
-                  >
-                    <div className="text-2xl mb-2">{citizen.badge}</div>
-                    <p className="font-semibold text-gray-900 text-sm">{citizen.name}</p>
-                    <p className="text-xs text-gray-600">{citizen.issues} issues</p>
-                    <div className="text-xs text-blue-600 font-medium mt-1">#{citizen.rank}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

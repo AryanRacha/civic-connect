@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 
 interface LandingPageProps {
+  onNavigateToLogin: () => void; 
   onNavigateToSignup: () => void
   onNavigateToDashboard?: () => void
 }
