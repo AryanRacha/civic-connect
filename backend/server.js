@@ -11,12 +11,14 @@ dotenv.config();
 // website routes
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
+import reportRouter from "./routes/report.route.js";
+import issueRouter from "./routes/issue.route.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // your Next.js frontend URL
+    origin: "http://localhost:5173", // your React.js frontend URL
     credentials: true, // allow cookies to be sent
   })
 );
@@ -31,6 +33,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/report", reportRouter);
+app.use("/api/issue", issueRouter);
 
 app.get("/*", (req, res) => {
   res.status(404).json({ message: "Route not found" });

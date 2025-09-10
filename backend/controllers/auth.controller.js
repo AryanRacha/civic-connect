@@ -2,11 +2,12 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import generateTokenAndSetCookie from "../utils/generateTokens.js";
 import { role } from "../config/enum.js";
+import nodemail from "nodemailer";
 
 // Signup user
 export async function signupUser(req, res) {
   try {
-    const { name, email, phone_no, password, role_id } = req.body;
+    const { name, email, password, role_id } = req.body;
 
     // Validation checks
     if (!name || !email || !phone_no || !password || !role_id) {
@@ -47,19 +48,6 @@ export async function signupUser(req, res) {
         .json({ success: false, message: "Phone number already exists" });
     }
 
-    // Check if role_id is valid
-    const validRole =
-      role_id === role.citizen ||
-      role_id === role.municipal_admin ||
-      role_id === role.field_officer;
-    if (!validRole) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid role ID" });
-    }
-
-    const userRole = Object.keys(role).find((key) => role[key] === role_id);
-
     // Password length check
     if (password.length < 6) {
       return res.status(400).json({
@@ -67,6 +55,13 @@ export async function signupUser(req, res) {
         message: "Password should be at least 6 characters",
       });
     }
+
+    if (role_id !== role.citizen && role_id !== role.municipal_admin) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid role ID" });
+    }
+    const userRole = role.citizen === role_id ? "citizen" : "municipal_admin";
 
     // Hashing the password
     const salt = await bcrypt.genSalt(10);
@@ -76,9 +71,8 @@ export async function signupUser(req, res) {
     const newUser = new User({
       name: name,
       email: email,
-      phone_no: phone_no,
       password: hashedPassword,
-      role: userRole,
+      roll: userRole,
     });
 
     // Generating token and setting cookie
@@ -100,32 +94,24 @@ export async function signupUser(req, res) {
 // Login user
 export async function loginUser(req, res) {
   try {
-    const { email, phone_no, password, role_id } = req.body;
+    const { email, password, role_id } = req.body;
 
     // Validation checks
-    if ((!email && !phone_no) || !password || !role_id) {
+    if (!email || !password || !role_id) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
 
-    // Role check
-    const validRole =
-      role_id === role.citizen ||
-      role_id === role.municipal_admin ||
-      role_id === role.field_officer;
-    if (!validRole) {
+    if (role_id === role.citizen || role_id === role.municipal_admin) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid role ID" });
     }
 
-    // Email or Phone No.
-    const authType = email ? "email" : "phone_no";
-
     // Find user by email
     const user = await User.findOne({
-      [authType]: authType === "email" ? email : phone_no,
+      email: email,
     }).select("+password");
     if (!user) {
       return res
@@ -165,6 +151,122 @@ export async function logoutUser(req, res) {
     });
   } catch (error) {
     console.log("Error in logout controller:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+export async function forgotPassword(req, res) {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 6 characters",
+      });
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Old password is incorrect" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    user.resetOtp = otp;
+    user.resetOtpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    user.pendingNewPassword = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    // Send OTP via email
+    const transporter = nodemail.createTransport({
+      secure: true,
+      host: "smtp.gmail.com",
+      port: 465,
+      auth: {
+        user: "nottherealgaa@gmail.com",
+        pass: "yxfeongjcqdbyvpn",
+      },
+    });
+
+    const mailOptions = {
+      from: "nottherealgaa@gmail.com",
+      to: email,
+      subject: "Your OTP for Password Change",
+      html: `<p>Hello ${user.name},</p><p>Your OTP is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ success: true, message: "OTP sent to your email" });
+  } catch (error) {
+    console.log("Error in requestPasswordChange:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+export async function verifyOtpAndUpdatePassword(req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (
+      !user ||
+      !user.resetOtp ||
+      !user.resetOtpExpires ||
+      !user.pendingNewPassword
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No OTP request found" });
+    }
+
+    if (Date.now() > user.resetOtpExpires) {
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP has expired" });
+    }
+
+    if (user.resetOtp !== otp) {
+      return res.status(401).json({ success: false, message: "Invalid OTP" });
+    }
+
+    // Update password
+    user.password = user.pendingNewPassword;
+
+    // Clear OTP and pending password
+    user.resetOtp = undefined;
+    user.resetOtpExpires = undefined;
+    user.pendingNewPassword = undefined;
+
+    await user.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.log("Error in verifyOtpAndUpdatePassword:", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 }

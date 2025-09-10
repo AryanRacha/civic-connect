@@ -9,7 +9,7 @@ const generateTokenAndSetCookie = (userId, res) => {
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "None",
-    secure: false, // <-- use true in production (https). false for local dev.
+    secure: false,
   });
 
   return token;

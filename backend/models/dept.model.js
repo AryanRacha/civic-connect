@@ -1,27 +1,26 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema(
+const departmentSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
       unique: true,
       trim: true,
-      lowercase: true,
     },
-    password: {
+    zone: {
       type: String,
       required: true,
+      trim: true,
     },
-    role: {
-      enum: ["citizen", "municipal_admin"],
-      type: String,
+    categoriesHandled: {
+      type: [String],
+      required: true,
+    },
+    adminId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },
@@ -30,5 +29,5 @@ const userSchema = new Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+const Department = mongoose.model("Department", departmentSchema);
+module.exports = Department;

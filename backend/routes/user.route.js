@@ -1,17 +1,22 @@
 import express from "express";
 import protectRoute from "../middlewares/protectRoute.js";
 import {
-  getCurrentUser,
-  getUser,
-  updateUser,
-  deleteUser,
+  getMyProfile,
+  updateMyProfile,
+  deleteMyAccount,
+  getMyReportedIssues,
+  getFollowedIssues,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-router.get("/", protectRoute, getCurrentUser);
-router.get("/:id", protectRoute, getUser);
-router.put("/:id", protectRoute, updateUser);
-router.delete("/:id", protectRoute, deleteUser);
+router.get("/profile", protectRoute, getMyProfile);
+router.put("/profile", protectRoute, updateMyProfile);
+
+router.delete("/profile", protectRoute, deleteMyAccount);
+
+router.get("/my-issues", protectRoute, getMyReportedIssues);
+
+router.get("/followed-issues", protectRoute, getFollowedIssues);
 
 export default router;

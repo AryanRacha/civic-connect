@@ -8,7 +8,7 @@ export async function getCurrentUser(req, res) {
 
     res.status(200).json({
       status: "sucess",
-      me: user,
+      user: user,
     });
   } catch (error) {
     console.error("Error fetching event:", error);
@@ -20,18 +20,7 @@ export async function getUser(req, res) {
   try {
     const { id } = req.params;
 
-    // Only allow self for now
-    if (req.user._id.toString() !== id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    const user = await User.findById(id)
-      .populate("organization", "name slug")
-      .populate({
-        path: "registeredEvents",
-        populate: { path: "event", select: "title slug startDate endDate" },
-      })
-      .select("-password");
+    const user = await User.findById(id);
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -43,22 +32,16 @@ export async function getUser(req, res) {
 
 export async function updateUser(req, res) {
   try {
-    const { id } = req.params;
-
-    if (req.user._id.toString() !== id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
+    const id = req.user._id;
 
     // Disallow changing role/org directly via update
-    const { role, organization, password, ...updates } = req.body;
+    const { name, email, password } = req.body;
 
     const user = await User.findByIdAndUpdate(
       id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    )
-      .populate("organization", "name slug")
-      .select("-password");
+      { name, email, password },
+      { new: true }
+    );
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
