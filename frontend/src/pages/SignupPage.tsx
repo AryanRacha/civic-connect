@@ -1,6 +1,5 @@
-"use client"
-
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Input } from "../components/ui/input"
@@ -25,11 +24,8 @@ interface ValidationState {
 
 type FieldName = keyof FormData
 
-interface SignupPageProps {
-  onNavigateToLogin: () => void
-}
-
-export default function SignupPage({ onNavigateToLogin }: SignupPageProps) {
+export default function SignupPage() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
@@ -98,7 +94,7 @@ export default function SignupPage({ onNavigateToLogin }: SignupPageProps) {
     // Handle signup logic here
     console.log("Signup data:", formData)
     // After successful signup, redirect to login
-    onNavigateToLogin()
+    navigate("/login")
   }
 
   const ValidationIcon = ({ isValid }: { isValid: boolean | null }) => {
@@ -252,7 +248,7 @@ export default function SignupPage({ onNavigateToLogin }: SignupPageProps) {
 
           <div className="text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <button onClick={onNavigateToLogin} className="text-blue-600 hover:text-blue-700 font-medium underline">
+            <button onClick={() => navigate('/login')} className="text-blue-600 hover:text-blue-700 font-medium underline">
               Login here
             </button>
           </div>

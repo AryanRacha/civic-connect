@@ -1,7 +1,6 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Card } from "../components/ui/Card"
 import { Input } from "../components/ui/input"
@@ -10,11 +9,8 @@ import { ImageUploader } from "../components/ImageUploader"
 import { useLocation } from "../hooks/useLocation"
 import { MapPin, Loader2 } from "lucide-react"
 
-interface ReportIssuePageProps {
-  onNavigateBack?: () => void
-}
-
-export const ReportIssuePage: React.FC<ReportIssuePageProps> = ({ onNavigateBack }) => {
+const ReportIssuePage: React.FC = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -140,11 +136,9 @@ export const ReportIssuePage: React.FC<ReportIssuePageProps> = ({ onNavigateBack
                     "Submit Report"
                   )}
                 </Button>
-                {onNavigateBack && (
-                  <Button type="button" variant="outline" onClick={onNavigateBack}>
-                    Cancel
-                  </Button>
-                )}
+                <Button type="button" variant="outline" onClick={() => navigate('/dashboard')}>
+                  Cancel
+                </Button>
               </div>
             </form>
           </Card>

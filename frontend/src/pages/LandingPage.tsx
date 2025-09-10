@@ -1,6 +1,6 @@
-"use client"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
+import { useNavigate } from "react-router-dom"
 import {
   Shield,
   Bot,
@@ -15,13 +15,8 @@ import {
   Users,
 } from "lucide-react"
 
-interface LandingPageProps {
-  onNavigateToLogin: () => void; 
-  onNavigateToSignup: () => void
-  onNavigateToDashboard?: () => void
-}
-
-export default function LandingPage({ onNavigateToSignup, onNavigateToDashboard }: LandingPageProps) {
+export default function LandingPage() {
+  const navigate = useNavigate()
   const handleNavClick = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -67,21 +62,26 @@ export default function LandingPage({ onNavigateToSignup, onNavigateToDashboard 
               >
                 Contact
               </button>
-              {onNavigateToDashboard && (
-                <button onClick={onNavigateToDashboard} className="text-gray-600 hover:text-blue-600 transition-colors">
-                  Dashboard
-                </button>
-              )}
+              <button 
+                onClick={() => navigate('/dashboard')} 
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                Dashboard
+              </button>
               <Button
                 size="sm"
                 variant="outline"
                 className="border-blue-600 text-blue-600 hover:bg-blue-50 bg-transparent"
-                onClick={onNavigateToSignup}
+                onClick={() => navigate('/signup')}
               >
                 Sign Up
               </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                Report Issue
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => navigate('/login')}
+              >
+                Login
               </Button>
             </div>
 

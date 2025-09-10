@@ -26,22 +26,15 @@ import {
   Clock,
   Camera,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 // Define the props interface, similar to BrowseIssuesPageProps
-interface MyProfilePageProps {
-  onNavigateBack: () => void // Function to call when navigating back to Dashboard
-  onNavigateToReportIssue: () => void // Added for consistency with sidebar navigation in App.tsx
-  onNavigateToBrowseIssues: () => void // Added for consistency with sidebar navigation in App.tsx
-  onNavigateToLanding: () => void // Added for Log Out consistency
-}
+
 
 // Accept the props in the component function
-export default function MyProfilePage({
-  onNavigateBack,
-  onNavigateToReportIssue,
-  onNavigateToBrowseIssues,
-  onNavigateToLanding,
-}: MyProfilePageProps) {
+export default function MyProfilePage() {
+  const navigate = useNavigate(); // Add this line
+  
   // const navigate = useNavigate() // REMOVED: No longer needed for primary navigation
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -138,14 +131,14 @@ export default function MyProfilePage({
 
         <nav className="mt-8 px-4 space-y-2">
           <button
-            onClick={onNavigateBack} 
+            onClick={() => navigate('/dashboard')} 
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Home className="w-5 h-5" />
             <span className="font-medium">Dashboard</span>
           </button>
           <button
-            onClick={onNavigateToReportIssue} 
+            onClick={() => navigate('/report-issue')} 
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Plus className="w-5 h-5" />
@@ -157,7 +150,7 @@ export default function MyProfilePage({
             <span className="font-medium">My Profile</span>
           </a>
           <button
-            onClick={onNavigateToBrowseIssues} 
+            onClick={() => navigate('/browse-issues')} 
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Users className="w-5 h-5" />
@@ -169,7 +162,7 @@ export default function MyProfilePage({
           <Button
             variant="outline"
             className="w-full justify-start text-gray-600 border-gray-300 hover:bg-gray-50 bg-transparent"
-            onClick={onNavigateToLanding} // Using the prop for Log Out navigation
+            onClick={() => navigate('/')} // Using the prop for Log Out navigation
           >
             <LogOut className="w-5 h-5 mr-3" />
             Log Out

@@ -1,7 +1,5 @@
-"use client"
-
 import { useState } from "react"
-
+import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
 import {
@@ -18,11 +16,8 @@ import {
   AlertCircle,
 } from "lucide-react"
 
-interface BrowseIssuesPageProps {
-  onNavigateBack: () => void
-}
-
-export default function BrowseIssuesPage({ onNavigateBack }: BrowseIssuesPageProps) {
+export default function BrowseIssuesPage() {
+  const navigate = useNavigate()
   const [activeFilter, setActiveFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -147,7 +142,7 @@ export default function BrowseIssuesPage({ onNavigateBack }: BrowseIssuesPagePro
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onNavigateBack}
+                onClick={() => navigate('/dashboard')}
                 className="border-gray-300 bg-transparent"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

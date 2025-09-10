@@ -1,8 +1,7 @@
-"use client"
-
 import type React from "react"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Input } from "../components/ui/input"
@@ -27,17 +26,8 @@ interface ValidationState {
 
 type FieldName = keyof FormData
 
-interface LoginPageProps {
-  onNavigateToSignup: () => void
-  onNavigateToDashboard: () => void
-  onNavigateToLogin: () => void // <--- ADD THIS LINE HERE
-}
-
-export default function LoginPage({ 
-  onNavigateToSignup, 
-  onNavigateToDashboard,
-  onNavigateToLogin // <--- ADD THIS TO DESTRUCTURED PROPS
-}: LoginPageProps) {
+export default function LoginPage() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -86,7 +76,7 @@ export default function LoginPage({
     // Handle login logic here
     console.log("Login data:", formData)
     // For now, navigate to dashboard on successful login
-    onNavigateToDashboard()
+    navigate('/dashboard')
   }
 
   const ValidationIcon = ({ isValid }: { isValid: boolean | null }) => {
@@ -247,7 +237,7 @@ export default function LoginPage({
 
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <button onClick={onNavigateToSignup} className="text-blue-600 hover:text-blue-700 font-medium underline">
+            <button onClick={() => navigate('/signup')} className="text-blue-600 hover:text-blue-700 font-medium underline">
               Sign up here
             </button>
           </div>

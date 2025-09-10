@@ -1,6 +1,5 @@
-"use client"
-
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
 import ChatbotInterface from "../components/ChatbotInterface"
@@ -22,14 +21,8 @@ import {
   X,
 } from "lucide-react"
 
-interface DashboardPageProps {
-  onNavigateToLanding: () => void
-  onNavigateToReportIssue?: () => void
-  onNavigateToBrowseIssues?: () => void
-  onNavigateToMyProfile?: ()=>void;
-}
-
-export default function DashboardPage({ onNavigateToLanding, onNavigateToReportIssue, onNavigateToBrowseIssues , onNavigateToMyProfile}: DashboardPageProps) {
+export default function DashboardPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("all")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -128,35 +121,33 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
             <span className="font-medium">Dashboard</span>
           </a>
           <button
-            onClick={onNavigateToReportIssue}
+            onClick={() => navigate('/report-issue')}
             className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Report Issue</span>
           </button>
-          <a
-            href="#"
-            onClick={onNavigateToMyProfile}
-            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          <button
+            onClick={() => navigate('/my-profile')}
+            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <User className="w-5 h-5" />
             <span className="font-medium">My Profile</span>
-          </a>
-          <a
-            href="#"
-            onClick={onNavigateToBrowseIssues}
-            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          </button>
+          <button
+            onClick={() => navigate('/browse-issues')}
+            className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full text-left"
           >
             <Users className="w-5 h-5" />
             <span className="font-medium">Browse Issues</span>
-          </a>
+          </button>
         </nav>
 
         <div className="absolute bottom-4 left-4 right-4">
           <Button
             variant="outline"
             className="w-full justify-start text-gray-600 border-gray-300 hover:bg-gray-50 bg-transparent"
-            onClick={onNavigateToLanding}
+            onClick={() => navigate('/')}
           >
             <LogOut className="w-5 h-5 mr-3" />
             Log Out
@@ -186,7 +177,7 @@ export default function DashboardPage({ onNavigateToLanding, onNavigateToReportI
                   Your voice matters. Let's build a better community together.
                 </p>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3" onClick={onNavigateToReportIssue}>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3" onClick={() => navigate('/report-issue')}>
                 <Plus className="w-5 h-5 mr-2" />
                 Report New Issue
               </Button>
