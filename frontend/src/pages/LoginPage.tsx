@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Input } from "../components/ui/Input"
+import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/Label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react"
@@ -28,11 +28,16 @@ interface ValidationState {
 type FieldName = keyof FormData
 
 interface LoginPageProps {
-  onNavigateToLanding: () => void
+  onNavigateToSignup: () => void
   onNavigateToDashboard: () => void
+  onNavigateToLogin: () => void // <--- ADD THIS LINE HERE
 }
 
-export default function LoginPage({ onNavigateToLanding, onNavigateToDashboard }: LoginPageProps) {
+export default function LoginPage({ 
+  onNavigateToSignup, 
+  onNavigateToDashboard,
+  onNavigateToLogin // <--- ADD THIS TO DESTRUCTURED PROPS
+}: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -242,8 +247,8 @@ export default function LoginPage({ onNavigateToLanding, onNavigateToDashboard }
 
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <button onClick={onNavigateToLanding} className="text-blue-600 hover:text-blue-700 font-medium underline">
-              Back to Home
+            <button onClick={onNavigateToSignup} className="text-blue-600 hover:text-blue-700 font-medium underline">
+              Sign up here
             </button>
           </div>
         </CardContent>
