@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { role } from "../config/enum";
+import { role } from "../config/enum.js";
 
 const protectAdmin = async (req, res, next) => {
   try {

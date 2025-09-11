@@ -6,7 +6,6 @@ import {
   deleteMyAccount,
   getMyReportedIssues,
   getFollowedIssues,
-  followIssue,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();

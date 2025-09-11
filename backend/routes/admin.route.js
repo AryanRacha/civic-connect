@@ -3,7 +3,6 @@ import protectRoute from "../middlewares/protectRoute.js";
 import protectAdmin from "../middlewares/protectAdmin.js"; 
 
 import {
-  getAllUsers,
   getUserById,
   createDepartment,
   getAllDepartments,

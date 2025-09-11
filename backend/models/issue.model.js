@@ -29,6 +29,10 @@ const issueSchema = new Schema(
       required: [true, "Description is required."],
       trim: true,
     },
+    location: {
+      type: Schema.Types.ObjectId,
+      ref: "LocationIndex",
+    },
     reports: [{ type: Schema.Types.ObjectId, ref: "Report" }],
     follows: [{ type: Schema.Types.ObjectId, ref: "User" }],
     assignedTo: { type: Schema.Types.ObjectId, ref: "Department" },
