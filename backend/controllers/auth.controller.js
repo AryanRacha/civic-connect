@@ -10,7 +10,7 @@ export async function signupUser(req, res) {
     const { name, email, password, role_id } = req.body;
 
     // Validation checks
-    if (!name || !email || !phone_no || !password || !role_id) {
+    if (!name || !email || !password || !role_id) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -24,28 +24,13 @@ export async function signupUser(req, res) {
         .json({ success: false, message: "Invalid email format" });
     }
 
-    // Phone number regex validation
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phone_no)) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Invalid phone number format" });
-    }
-
+  
     // Check if email already exists
     const existingUserByEmail = await User.findOne({ email: email });
     if (existingUserByEmail) {
       return res
         .status(400)
         .json({ success: false, message: "Email already exists" });
-    }
-
-    // Check if phone_no already exists
-    const existingUserByPhone = await User.findOne({ phone_no: phone_no });
-    if (existingUserByPhone) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Phone number already exists" });
     }
 
     // Password length check
@@ -67,12 +52,12 @@ export async function signupUser(req, res) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Creating a new user
+    // Creating a new user 
     const newUser = new User({
       name: name,
       email: email,
       password: hashedPassword,
-      roll: userRole,
+      role: userRole,
     });
 
     // Generating token and setting cookie

@@ -1,6 +1,8 @@
 // Appwrite client setup for backend usage
-import { Client, Storage, ID } from "appwrite";
 
+import { Client, Storage, ID } from "appwrite";
+import dotenv from 'dotenv';
+dotenv.config();
 // Initialize Appwrite client
 const client = new Client();
 

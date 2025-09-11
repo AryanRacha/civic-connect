@@ -74,15 +74,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          [formData.loginType]: formData[formData.loginType],
+          email: formData.email,
           password: formData.password,
-          role: formData.role,
+          role_id: formData.role,
         }),
       });
 
@@ -214,7 +214,6 @@ catch (error) {
                   <SelectContent>
                     <SelectItem value="citizen">Citizen</SelectItem>
                     <SelectItem value="municipal_admin">Municipal Admin</SelectItem>
-                    <SelectItem value="field_officer">Field Officer</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
