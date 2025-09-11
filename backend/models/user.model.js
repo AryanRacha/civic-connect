@@ -20,8 +20,8 @@ const userSchema = new Schema(
       required: true,
     },
     role: {
-      enum: ["citizen", "municipal_admin"],
       type: String,
+      enum: ["citizen", "municipal_admin"],
       required: true,
     },
   },

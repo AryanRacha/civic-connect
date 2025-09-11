@@ -1,70 +1,78 @@
-// controllers/userController.js
+
 import User from "../models/user.model.js";
+import Issue from "../models/issue.model.js";
 
-export async function getCurrentUser(req, res) {
+// GET /api/user/profile
+export async function getMyProfile(req, res) {
   try {
-    const user = await User.findOne({ _id: req.user._id });
-    console.log("Fetched user:", user);
-
-    res.status(200).json({
-      status: "sucess",
-      user: user,
-    });
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user);
   } catch (error) {
-    console.error("Error fetching event:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-export async function getUser(req, res) {
+// PUT /api/user/profile
+export async function updateMyProfile(req, res) {
   try {
-    const { id } = req.params;
-
-    const user = await User.findById(id);
-
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-}
-
-export async function updateUser(req, res) {
-  try {
-    const id = req.user._id;
-
-    // Disallow changing role/org directly via update
-    const { name, email, password } = req.body;
-
+    const { name, email } = req.body;
     const user = await User.findByIdAndUpdate(
-      id,
-      { name, email, password },
-      { new: true }
+      req.user._id,
+      { name, email },
+      { new: true, runValidators: true, select: "-password" }
     );
-
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-export async function deleteUser(req, res) {
+// DELETE /api/user/profile
+export async function deleteMyAccount(req, res) {
   try {
-    const { id } = req.params;
-
-    if (req.user._id.toString() !== id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    const user = await User.findByIdAndDelete(id);
-
+    const user = await User.findByIdAndDelete(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json({ message: "User deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(200).json({ message: "User deleted successfully", user: user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
+
+// GET /api/user/my-issues
+export async function getMyReportedIssues(req, res) {
+  try {
+    const user = await User.findById(req.user._id).select("reportedIssues");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Fetch the actual issues from the Issue model
+    const reports = await Issue.find({ _id: { $in: user.reportedIssues } });
+    
+    res.status(200).json(reports);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+
+
+
+// GET /api/user/followed-issues
+export async function getFollowedIssues(req, res) {
+  try {
+    const user = await User.findById(req.user._id).select("followedIssues");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Fetch the actual issues from the Issue model
+    const issues = await Issue.find({ _id: { $in: user.followedIssues } });
+
+    res.status(200).json(issues);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+
+
+

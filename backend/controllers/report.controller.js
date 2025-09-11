@@ -1,9 +1,5 @@
-import multer from "multer";
 import { storage, ID } from "../config/appwrite.js";
 import Report from "../models/report.model.js";
-
-// Multer setup for memory storage (no file size limit)
-const upload = multer({ storage: multer.memoryStorage() });
 
 export const addReport = async (req, res) => {
   const { description } = req.body;

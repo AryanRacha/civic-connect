@@ -1,7 +1,52 @@
+/**
+ * Controller functions for handling Issue-related operations in the backend.
+ *
+ * This file provides endpoints for:
+ * - Creating a new issue (`createIssue`)
+ * - Fetching all issues or a specific issue by ID
+ * - Adding a report to an existing issue (`addReportToIssue`)
+ * - Following/unfollowing issues
+ * - Updating issue status
+ * - Assigning issues to departments
+ * - Deleting issues
+ *
+ * IMPORTANT: Difference between `createIssue` and `addReportToIssue`
+ * ----------------------------------------------------------------------------
+ * - `createIssue`: 
+ *      - Used to create a brand new issue in the system.
+ *      - Expects all necessary issue details in the request body.
+ *      - Saves a new Issue document to the database.
+ *      - Should be called when a user is reporting a problem that does not exist yet.
+ *
+ * - `addReportToIssue`:
+ *      - Used to add a user's report to an already existing issue.
+ *      - Prevents duplicate reports from the same user for the same issue.
+ *      - If it's the first report for the issue, it creates a new Report document and links it to the issue.
+ *      - For subsequent reports, it only adds a reference (user and issue) to the issue's `reports` array.
+ *      - Should be called when a user wants to indicate they are also affected by or have information about an existing issue.
+ *
+ * This distinction is important: 
+ *   - Use `createIssue` for new, unique problems.
+ *   - Use `addReportToIssue` for supporting or contributing to an already reported issue.
+ *
+ * All controller functions handle errors and respond with appropriate HTTP status codes and messages.
+ */
 import Issue from "../models/issue.model.js";
 import Report from "../models/report.model.js";
-import User from "../models/user.model.js";
 import Department from "../models/dept.model.js";
+import User from "../models/user.model.js";
+
+
+
+export const createIssue = async (req, res) => {
+  try {
+    const newIssue = new Issue(req.body);
+    await newIssue.save();
+    res.status(201).json(newIssue);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 export const getAllIssues = async (req, res) => {
   try {
@@ -29,6 +74,30 @@ export const getIssueById = async (req, res) => {
   }
 };
 
+/**
+ * Adds a report to an existing issue.
+ *
+ * Logic:
+ * - Retrieves the issue by ID from the request parameters.
+ * - Checks if the issue exists; if not, responds with 404.
+ * - Checks if the current user has already reported this issue; if so, responds with 400.
+ * - If this is the first report for the issue:
+ *   - Expects `description` and `imageUrl` in the request body.
+ *   - Creates a new Report document and saves it.
+ *   - Adds a reference to the report in the issue's `reports` array.
+ *   - Responds with 201 and the created report.
+ * - If there are already reports for the issue:
+ *   - Only adds the user and issue reference to the `reports` array (no new Report document).
+ *   - Prevents duplicate reports from the same user.
+ *   - Responds with 201 and a success message.
+ * - Handles server errors with a 500 response.
+ *
+ * @async
+ * @function addReportToIssue
+ * @param {Object} req - Express request object, expects `params.id`, `user._id`, and optionally `body.description`, `body.imageUrl`.
+ * @param {Object} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const addReportToIssue = async (req, res) => {
   try {
     const { id } = req.params;
@@ -87,19 +156,33 @@ export const addReportToIssue = async (req, res) => {
 
 export const followIssue = async (req, res) => {
   try {
-    const { id } = req.params;
-    const userId = req.user._id;
-    const issue = await Issue.findById(id);
-    if (!issue) {
-      return res.status(404).json({ message: "Issue not found" });
+    const userId = req.user._id; // assuming user is authenticated and user object is in req
+    const { issueId } = req.body;
+
+    if (!issueId) {
+      return res.status(400).json({ message: "Issue ID is required." });
     }
-    if (!issue.follows.includes(userId)) {
-      issue.follows.push(userId);
-      await issue.save();
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
-    res.status(200).json({ message: "Issue followed" });
+
+    // Prevent duplicate follows
+    if (user.followedIssues.includes(issueId)) {
+      return res.status(400).json({ message: "Already following this issue." });
+    }
+
+    user.followedIssues.push(issueId);
+    await user.save();
+
+    res.status(200).json({
+      message: "Issue followed successfully.",
+      followedIssues: user.followedIssues,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error.", error: error.message });
   }
 };
 

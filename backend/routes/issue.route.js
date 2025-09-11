@@ -22,6 +22,8 @@ router.post("/", protectRoute, createIssue);
 router.get("/", protectRoute, getAllIssues);
 router.get("/:id", protectRoute, getIssueById);
 router.post("/:id/report", protectRoute, addReportToIssue);
+
+//This route when user clicks on follow button in trendings section
 router.post("/:id/follow", protectRoute, followIssue);
 router.post("/:id/unfollow", protectRoute, unfollowIssue);
 

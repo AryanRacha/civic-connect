@@ -12,21 +12,6 @@ const issueSchema = new Schema(
       type: String,
       required: [true, "Category is required."],
     },
-    address: {
-      type: String,
-      required: [true, "Address is required."],
-    },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        required: true,
-      },
-      coordinates: {
-        type: [Number],
-        required: true,
-      },
-    },
     status: {
       type: String,
       required: true,
