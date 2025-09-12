@@ -13,17 +13,15 @@ import { Label } from "../components/ui/Label";
 import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react";
 
 interface FormData {
-  fullName: string;
+  name: string;
   email: string;
-  phone: string;
   password: string;
   confirmPassword: string;
 }
 
 interface ValidationState {
-  fullName: boolean | null;
+  name: boolean | null;
   email: boolean | null;
-  phone: boolean | null;
   password: boolean | null;
   confirmPassword: boolean | null;
 }
@@ -36,16 +34,14 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    fullName: "",
+    name: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
   });
   const [validation, setValidation] = useState<ValidationState>({
-    fullName: null,
+    name: null,
     email: null,
-    phone: null,
     password: null,
     confirmPassword: null,
   });
@@ -54,12 +50,10 @@ export default function SignupPage() {
 
   const validateField = (field: FieldName, value: string): boolean => {
     switch (field) {
-      case "fullName":
+      case "name":
         return value.length >= 2;
       case "email":
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-      case "phone":
-        return /^[0-9]{10}$/.test(value);
       case "password":
         return value.length >= 6;
       case "confirmPassword":
@@ -105,7 +99,7 @@ export default function SignupPage() {
     e.preventDefault();
     try {
       await signup(
-        formData.fullName,
+        formData.name,
         formData.email,
         formData.password,
         "citizen"
@@ -170,14 +164,14 @@ export default function SignupPage() {
                   id="fullName"
                   type="text"
                   placeholder="e.g., Jane Doe"
-                  value={formData.fullName}
+                  value={formData.name}
                   onChange={(e) =>
-                    handleInputChange("fullName", e.target.value)
+                    handleInputChange("name", e.target.value)
                   }
                   className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <ValidationIcon isValid={validation.fullName} />
+                  <ValidationIcon isValid={validation.name} />
                 </div>
               </div>
             </div>

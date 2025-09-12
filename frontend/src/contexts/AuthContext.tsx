@@ -11,10 +11,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: "citizen" | "municipal_admin" | "field_officer";
-  address?: string;
-  joinDate?: string;
-  bio?: string;
+  role: "citizen" | "municipal_admin";
 }
 
 // Auth context interface
@@ -59,26 +56,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (storedToken) setToken(storedToken);
         if (storedUser) setUser(JSON.parse(storedUser));
 
+        // If there is no token at all, treat as unauthenticated and avoid hitting profile
+        if (!storedToken) {
+          localStorage.removeItem("isAuthenticated");
+          setIsAuthenticated(false);
+          setUser(null);
+          return;
+        }
+
         // Authoritative check with backend using cookie
-        const profileRes = await fetch("http://localhost:5000/api/users/profile", {
-          method: "GET",
-          credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        if (profileRes.ok) {
-          const profile = await profileRes.json();
-          localStorage.setItem("user", JSON.stringify(profile));
-          localStorage.setItem("isAuthenticated", "true");
-          setUser(profile);
-          setIsAuthenticated(true);
-        } else {
+        try {
+          const profileRes = await fetch("http://localhost:5000/api/users/profile", {
+            method: "GET",
+            credentials: "include",
+            headers: storedToken ? { Authorization: `Bearer ${storedToken}` } : undefined,
+          });
+
+          if (profileRes.ok) {
+            const profile = await profileRes.json();
+            localStorage.setItem("user", JSON.stringify(profile));
+            localStorage.setItem("isAuthenticated", "true");
+            setUser(profile);
+            setIsAuthenticated(true);
+          } else if (profileRes.status === 401 || profileRes.status === 403) {
+            // Not authorized: treat as normal unauthenticated state without throwing/logging
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("user");
+            setIsAuthenticated(false);
+            setUser(null);
+          } else {
+            // Other non-OK responses: be conservative and mark unauthenticated
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("user");
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        } catch (_) {
+          // Network or unexpected error: don't throw, just mark unauthenticated silently
           localStorage.removeItem("isAuthenticated");
           localStorage.removeItem("user");
           setIsAuthenticated(false);
           setUser(null);
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        // Swallow expected init errors; do not throw
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         localStorage.removeItem("isAuthenticated");
@@ -116,14 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       // Try to parse response, but backend may not send token/user
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch (_) {
-        // ignore
-      }
-
-      console.log("data token", data.token);
+      const data = await response.json();
 
       if (data?.token) {
         localStorage.setItem("token", data.token);
@@ -132,25 +146,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (data?.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
-      }
-
-      // Only set authenticated if profile fetch succeeds
-      try {
+        // We have trustworthy user data; mark authenticated without extra fetch
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+      } else {
+        // Backend didn't return user; fetch profile once using freshest token
+        const freshestToken: string | null = data?.token || localStorage.getItem("token");
         const profileRes = await fetch("http://localhost:5000/api/users/profile", {
           method: "GET",
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          headers: freshestToken ? { Authorization: `Bearer ${freshestToken}` } : undefined,
         });
-        if (!profileRes.ok) throw new Error("Profile fetch failed");
+        if (!profileRes.ok) {
+          localStorage.removeItem("isAuthenticated");
+          setIsAuthenticated(false);
+          throw new Error("Profile fetch failed");
+        }
         const profile = await profileRes.json();
         localStorage.setItem("user", JSON.stringify(profile));
         localStorage.setItem("isAuthenticated", "true");
         setUser(profile);
         setIsAuthenticated(true);
-      } catch (e) {
-        localStorage.removeItem("isAuthenticated");
-        setIsAuthenticated(false);
-        throw e;
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -189,12 +205,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(error.message || "Signup failed");
       }
 
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch (_) {
-        // ignore
-      }
+      const data = await response.json(); 
 
       if (data?.token) {
         localStorage.setItem("token", data.token);
@@ -203,29 +214,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (data?.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
+        // We have trustworthy user data; mark authenticated without extra fetch
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
       } else {
-        // We at least know basic info from the form
-        const minimalUser = { name, email, role } as Partial<User>;
-        localStorage.setItem("user", JSON.stringify(minimalUser));
-        setUser(minimalUser as User);
-      }
-
-      // Only set authenticated if profile fetch succeeds
-      try {
+        // Fallback: perform a single profile fetch using freshest token
+        const freshestToken: string | null = data?.token || localStorage.getItem("token");
         const profileRes = await fetch("http://localhost:5000/api/users/profile", {
           method: "GET",
           credentials: "include",
+          headers: freshestToken ? { Authorization: `Bearer ${freshestToken}` } : undefined,
         });
-        if (!profileRes.ok) throw new Error("Profile fetch failed");
+        if (!profileRes.ok) {
+          localStorage.removeItem("isAuthenticated");
+          setIsAuthenticated(false);
+          throw new Error("Profile fetch failed");
+        }
         const profile = await profileRes.json();
         localStorage.setItem("user", JSON.stringify(profile));
         localStorage.setItem("isAuthenticated", "true");
         setUser(profile);
         setIsAuthenticated(true);
-      } catch (e) {
-        localStorage.removeItem("isAuthenticated");
-        setIsAuthenticated(false);
-        throw e;
       }
     } catch (error) {
       console.error("Signup error:", error);

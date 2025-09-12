@@ -1,6 +1,7 @@
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   Shield,
   Bot,
@@ -10,6 +11,7 @@ import {
   Bell,
   CheckCircle,
   Menu,
+  X,
   ArrowRight,
   MessageCircle,
   Users,
@@ -17,6 +19,7 @@ import {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const handleNavClick = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -27,7 +30,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50" role="navigation" aria-label="Main">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -81,12 +84,112 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            <button className="md:hidden">
-              <Menu className="w-6 h-6 text-gray-600" />
+            <button
+              className="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+              aria-label="Open menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Drawer */}
+      <div
+        id="mobile-menu"
+        className={`fixed inset-y-0 right-0 z-50 w-72 max-w-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out md:hidden ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="h-16 px-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-gray-900">CivicConnect</span>
+          </div>
+          <button
+            aria-label="Close menu"
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="p-4 space-y-2">
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleNavClick("platform");
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          >
+            Platform
+          </button>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleNavClick("features");
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          >
+            Features
+          </button>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleNavClick("how-it-works");
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          >
+            How It Works
+          </button>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleNavClick("contact");
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          >
+            Contact
+          </button>
+          <div className="pt-2 flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 bg-transparent"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/signup");
+              }}
+            >
+              Sign Up
+            </Button>
+            <Button
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/login");
+              }}
+            >
+              Login
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay for mobile menu */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-white">

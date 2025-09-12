@@ -89,12 +89,13 @@ export async function loginUser(req, res) {
     if (role !== "citizen" && role !== "municipal_admin") {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid role ID" });
+        .json({ success: false, message: "Invalid role" });
     }
 
     // Find user by email
     const user = await User.findOne({
       email: email,
+      role: role,
     }).select("+password");
     if (!user) {
       return res
@@ -119,8 +120,6 @@ export async function loginUser(req, res) {
       user: user,
       token: token,
     });
-
-    console.log("user", user);
   } catch (error) {
     console.log("Error in login controller:", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
