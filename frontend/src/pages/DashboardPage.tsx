@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
 import ChatbotInterface from "../components/ChatbotInterface"
+import MapComponent from "../components/MapComponent"
 import {
   Home,
   Plus,
@@ -304,13 +305,10 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Community Impact</h3>
                 <p className="text-gray-600 mb-4">See the most urgent issues near you</p>
 
-                {/* Mock Map */}
-                <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-lg h-64 flex items-center justify-center border-2 border-dashed border-blue-200">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 text-blue-600 mx-auto mb-2" />
-                    <p className="text-gray-600 font-medium">Interactive Map</p>
-                    <p className="text-sm text-gray-500">Showing nearby issues</p>
-                  </div>
+                {/* Interactive Map */}
+                {/* Import MapComponent at the top: import MapComponent from "../components/MapComponent"; */}
+                <div className="rounded-lg overflow-hidden h-64 border border-blue-200">
+                  <MapComponent />
                 </div>
               </CardContent>
             </Card>
