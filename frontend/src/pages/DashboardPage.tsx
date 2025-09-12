@@ -16,7 +16,6 @@ import {
   CheckCircle,
   XCircle,
   TrendingUp,
-  Award,
   Filter,
   Menu,
   X,
@@ -149,7 +148,7 @@ export default function DashboardPage() {
           <Button
             variant="outline"
             className="w-full justify-start text-gray-600 border-gray-300 hover:bg-gray-50 bg-transparent"
-            onClick={logout}
+            onClick={async () => { await logout(); navigate('/login'); }}
           >
             <LogOut className="w-5 h-5 mr-3" />
             Log Out
@@ -174,7 +173,7 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Welcome, {user?.fullName || 'User'}! 👋</h1>
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Welcome, {user?.name || 'User'}! 👋</h1>
                 <p className="text-lg text-gray-600 mt-2">
                   Your voice matters. Let's build a better community together.
                 </p>

@@ -66,6 +66,7 @@ export async function signupUser(req, res) {
     res.status(201).json({
       success: true,
       message: "Account has been successfully created",
+      user: newUser,
     });
   } catch (error) {
     console.log("Error in signup controller:", error.message);
@@ -102,7 +103,7 @@ export async function loginUser(req, res) {
     }
 
     // Check password match
-    const isPasswordCorrect = bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res
         .status(404)
@@ -110,11 +111,13 @@ export async function loginUser(req, res) {
     }
 
     // Generating token and setting cookie
-    generateTokenAndSetCookie(user._id, res);
+    const token = generateTokenAndSetCookie(user._id, res);
 
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
+      user: user,
+      token: token,
     });
 
     console.log("user", user);

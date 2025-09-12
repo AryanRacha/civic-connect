@@ -1,12 +1,17 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 // User interface
 export interface User {
   _id: string;
-  fullName: string;
+  name: string;
   email: string;
-  phone: string;
-  role: 'citizen' | 'municipal_admin' | 'field_officer';
+  role: "citizen" | "municipal_admin" | "field_officer";
   address?: string;
   joinDate?: string;
   bio?: string;
@@ -18,7 +23,13 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (emailOrPhone: string, password: string, role: string, loginType: 'email' | 'phone') => Promise<void>;
+  login: (email: string, password: string, role: string) => Promise<void>;
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -36,26 +47,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Check if user is authenticated
-  const isAuthenticated = !!user && !!token;
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        // Attempt to hydrate from localStorage (non-authoritative)
+        const storedToken = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+        if (storedToken) setToken(storedToken);
+        if (storedUser) setUser(JSON.parse(storedUser));
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+        // Authoritative check with backend using cookie
+        const profileRes = await fetch("http://localhost:5000/api/users/profile", {
+          method: "GET",
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          localStorage.setItem("user", JSON.stringify(profile));
+          localStorage.setItem("isAuthenticated", "true");
+          setUser(profile);
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("user");
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
-        // Clear invalid data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        console.error("Error initializing auth:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("isAuthenticated");
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -65,17 +93,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (emailOrPhone: string, password: string, role: string, loginType: 'email' | 'phone') => {
+  const login = async (email: string, password: string, role: string) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
-          [loginType]: emailOrPhone,
+          email: email,
           password,
           role,
         }),
@@ -83,20 +112,123 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+        throw new Error(error.message || "Login failed");
       }
 
-      const data = await response.json();
-      
-      // Store in localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // Update state
-      setToken(data.token);
-      setUser(data.user);
+      // Try to parse response, but backend may not send token/user
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        // ignore
+      }
+
+      console.log("data token", data.token);
+
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+      }
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setUser(data.user);
+      }
+
+      // Only set authenticated if profile fetch succeeds
+      try {
+        const profileRes = await fetch("http://localhost:5000/api/users/profile", {
+          method: "GET",
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!profileRes.ok) throw new Error("Profile fetch failed");
+        const profile = await profileRes.json();
+        localStorage.setItem("user", JSON.stringify(profile));
+        localStorage.setItem("isAuthenticated", "true");
+        setUser(profile);
+        setIsAuthenticated(true);
+      } catch (e) {
+        localStorage.removeItem("isAuthenticated");
+        setIsAuthenticated(false);
+        throw e;
+      }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Signup function
+  const signup = async (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => {
+    try {
+      setIsLoading(true);
+
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Signup failed");
+      }
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        // ignore
+      }
+
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+      }
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setUser(data.user);
+      } else {
+        // We at least know basic info from the form
+        const minimalUser = { name, email, role } as Partial<User>;
+        localStorage.setItem("user", JSON.stringify(minimalUser));
+        setUser(minimalUser as User);
+      }
+
+      // Only set authenticated if profile fetch succeeds
+      try {
+        const profileRes = await fetch("http://localhost:5000/api/users/profile", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!profileRes.ok) throw new Error("Profile fetch failed");
+        const profile = await profileRes.json();
+        localStorage.setItem("user", JSON.stringify(profile));
+        localStorage.setItem("isAuthenticated", "true");
+        setUser(profile);
+        setIsAuthenticated(true);
+      } catch (e) {
+        localStorage.removeItem("isAuthenticated");
+        setIsAuthenticated(false);
+        throw e;
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -104,14 +236,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch("http://localhost:5000/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (_) {}
+
     // Clear localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuthenticated");
+
     // Clear state
     setToken(null);
     setUser(null);
+    setIsAuthenticated(false);
   };
 
   // Update user data
@@ -119,7 +260,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem("user", JSON.stringify(updatedUser));
     }
   };
 
@@ -129,25 +270,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
+    signup,
     logout,
     updateUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use auth context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
 export default AuthContext;
-

@@ -217,7 +217,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enhanced Arrow 1 */}
-            <div className="flex items-center lg:block hidden">
+            <div className="md:flex items-center lg:block hidden">
               <div className="flex flex-col items-center">
                 <ArrowRight className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                 <div className="w-12 h-1 sm:w-16 sm:h-1 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full mt-2"></div>
@@ -245,7 +245,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enhanced Arrow 2 */}
-            <div className="flex items-center lg:block hidden">
+            <div className="md:flex items-center lg:block hidden">
               <div className="flex flex-col items-center">
                 <ArrowRight className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                 <div className="w-12 h-1 sm:w-16 sm:h-1 bg-gradient-to-r from-teal-600 to-green-600 rounded-full mt-2"></div>

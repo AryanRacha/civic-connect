@@ -23,15 +23,12 @@ import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react";
 
 interface FormData {
   email: string;
-  phone: string;
   password: string;
   role: string;
-  loginType: "email" | "phone";
 }
 
 interface ValidationState {
   email: boolean | null;
-  phone: boolean | null;
   password: boolean | null;
   role: boolean | null;
 }
@@ -45,14 +42,11 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: "",
-    phone: "",
     password: "",
     role: "",
-    loginType: "email",
   });
   const [validation, setValidation] = useState<ValidationState>({
     email: null,
-    phone: null,
     password: null,
     role: null,
   });
@@ -61,8 +55,6 @@ export default function LoginPage() {
     switch (field) {
       case "email":
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-      case "phone":
-        return /^[0-9]{10}$/.test(value);
       case "password":
         return value.length >= 6;
       case "role":
@@ -85,27 +77,11 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          [formData.loginType]: formData[formData.loginType],
-          password: formData.password,
-          role: formData.role,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
-      }
-
-      // Navigate to dashboard on successful login
+      setIsSubmitting(true);
+      await login(formData.email, formData.password, formData.role);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
@@ -152,54 +128,29 @@ export default function LoginPage() {
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email or Phone Input */}
-            {formData.loginType === "email" ? (
-              <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email ID
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="e.g., user@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <ValidationIcon isValid={validation.email} />
-                  </div>
+            {/* Email */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
+                Email ID
+              </Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="e.g., user@example.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <ValidationIcon isValid={validation.email} />
                 </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                <Label
-                  htmlFor="phone"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Phone Number
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="e.g., 9876543210"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <ValidationIcon isValid={validation.phone} />
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
 
             {/* Role */}
             <div className="space-y-2">
@@ -223,10 +174,6 @@ export default function LoginPage() {
                     <SelectItem value="municipal_admin">
                       Municipal Admin
                     </SelectItem>
-                    <SelectItem value="municipal_admin">
-                      Municipal Admin
-                    </SelectItem>
-                    <SelectItem value="field_officer">Field Officer</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="absolute right-10 top-1/2 transform -translate-y-1/2">

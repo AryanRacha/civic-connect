@@ -8,8 +8,10 @@ const generateTokenAndSetCookie = (userId, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "None",
-    secure: false,
+    sameSite: "Lax", // works for localhost:5173 -> localhost:5000
+    secure: false, // set to true when using HTTPS
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   return token;
