@@ -1,40 +1,39 @@
 # Ignore node_modules
-backend/node_modules/
-backend/node_modules
+node_modules/
 # Node.js
-./backend/node_modules/
-./backend/npm-debug.log
+node_modules/
+npm-debug.log
 .env
-./backend/.DS_Store
-./backend/*.log
-./backend/pids/
-./backend/*.pid
-./backend/*.seed
-./backend/*.pid.lock
+.DS_Store
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
 
 # Editor/IDE specific files
-./backend/.vscode/
-./backend/.idea/
-./backend/*.sublime-project
-./backend/*.sublime-workspace
+.vscode/
+.idea/
+*.sublime-project
+backend/*.sublime-workspace
 
 # Build artifacts
-./backend/dist/
-./backend/build/
+dist/
+build/
 coverage/
 
 # Test files and reports
-./backend/test/
-./backend/*.test.js
-./backend/*.spec.js
-./backend/.nyc_output/
+test/
+*.test.js
+*.spec.js
+.nyc_output/
 
 # OS generated files
-./backend/.DS_Store
-./backend/Thumbs.db
+.DS_Store
+Thumbs.db
 
 # Sensitive files
-./backend/config/local.js
-./backend/config/development.js
-./backend/*.key
-./backend/*.pem
+config/local.js
+config/development.js
+*.key
+*.pem
