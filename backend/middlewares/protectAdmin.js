@@ -1,10 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { role } from "../config/enum.js";
 
 const protectAdmin = async (req, res, next) => {
   try {
-    const isAdmin = role[req.user.role] === process.env.MUNICIPAL_ADMIN_ID;
+    const isAdmin = role[req.user.role] === "muncipal_admin";
     if (isAdmin) {
       return res
         .status(401)

@@ -1,16 +1,15 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import generateTokenAndSetCookie from "../utils/generateTokens.js";
-import { role } from "../config/enum.js";
 import nodemail from "nodemailer";
 
 // Signup user
 export async function signupUser(req, res) {
   try {
-    const { name, email, password, role_id } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Validation checks
-    if (!name || !email || !password || !role_id) {
+    if (!name || !email || !password || !role) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -24,7 +23,6 @@ export async function signupUser(req, res) {
         .json({ success: false, message: "Invalid email format" });
     }
 
-  
     // Check if email already exists
     const existingUserByEmail = await User.findOne({ email: email });
     if (existingUserByEmail) {
@@ -41,23 +39,22 @@ export async function signupUser(req, res) {
       });
     }
 
-    if (role_id !== role.citizen && role_id !== role.municipal_admin) {
+    if (role !== "citizen" && role !== "municipal_admin") {
       return res
         .status(400)
         .json({ success: false, message: "Invalid role ID" });
     }
-    const userRole = role.citizen === role_id ? "citizen" : "municipal_admin";
 
     // Hashing the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Creating a new user 
+    // Creating a new user
     const newUser = new User({
       name: name,
       email: email,
       password: hashedPassword,
-      role: userRole,
+      role: role,
     });
 
     // Generating token and setting cookie
@@ -79,16 +76,16 @@ export async function signupUser(req, res) {
 // Login user
 export async function loginUser(req, res) {
   try {
-    const { email, password, role_id } = req.body;
+    const { email, password, role } = req.body;
 
     // Validation checks
-    if (!email || !password || !role_id) {
+    if (!email || !password || !role) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
 
-    if (role_id === role.citizen || role_id === role.municipal_admin) {
+    if (role !== "citizen" && role !== "municipal_admin") {
       return res
         .status(400)
         .json({ success: false, message: "Invalid role ID" });
@@ -119,6 +116,8 @@ export async function loginUser(req, res) {
       success: true,
       message: "Logged in successfully",
     });
+
+    console.log("user", user);
   } catch (error) {
     console.log("Error in login controller:", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
