@@ -19,7 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // your React.js frontend URL
+    origin: ["http://localhost:5173", "http://localhost:4173"], // your React.js frontend URL
     credentials: true, // allow cookies to be sent
   })
 );
@@ -35,7 +35,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/issues", issueRouter);
 app.use("/api/users", userRouter);
-app.use("/api/reports", reportRouter); 
+app.use("/api/reports", reportRouter);
 app.use("/api/admin", adminRouter);
 
 app.get("/*", (req, res) => {
