@@ -1,5 +1,5 @@
 {
-  "name": "pothole-reporting-app",
+  "name": "issue-reporting-app",
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "multer": "^2.0.2",
+    "node-appwrite": "^19.0.0",
     "nodemailer": "^7.0.6"
   },
   "devDependencies": {

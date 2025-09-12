@@ -1,50 +1,124 @@
-/**
- * Controller functions for handling Issue-related operations in the backend.
- *
- * This file provides endpoints for:
- * - Creating a new issue (`createIssue`)
- * - Fetching all issues or a specific issue by ID
- * - Adding a report to an existing issue (`addReportToIssue`)
- * - Following/unfollowing issues
- * - Updating issue status
- * - Assigning issues to departments
- * - Deleting issues
- *
- * IMPORTANT: Difference between `createIssue` and `addReportToIssue`
- * ----------------------------------------------------------------------------
- * - `createIssue`: 
- *      - Used to create a brand new issue in the system.
- *      - Expects all necessary issue details in the request body.
- *      - Saves a new Issue document to the database.
- *      - Should be called when a user is reporting a problem that does not exist yet.
- *
- * - `addReportToIssue`:
- *      - Used to add a user's report to an already existing issue.
- *      - Prevents duplicate reports from the same user for the same issue.
- *      - If it's the first report for the issue, it creates a new Report document and links it to the issue.
- *      - For subsequent reports, it only adds a reference (user and issue) to the issue's `reports` array.
- *      - Should be called when a user wants to indicate they are also affected by or have information about an existing issue.
- *
- * This distinction is important: 
- *   - Use `createIssue` for new, unique problems.
- *   - Use `addReportToIssue` for supporting or contributing to an already reported issue.
- *
- * All controller functions handle errors and respond with appropriate HTTP status codes and messages.
- */
 import Issue from "../models/issue.model.js";
 import Report from "../models/report.model.js";
 import Department from "../models/dept.model.js";
 import User from "../models/user.model.js";
-
-
+import { uploadImagesToAppwrite } from "../utils/imageUploader.js";
+import { reverseGeocode } from "../utils/location.js";
 
 export const createIssue = async (req, res) => {
   try {
-    const newIssue = new Issue(req.body);
-    await newIssue.save();
-    res.status(201).json(newIssue);
+    // --- 1. GET & VALIDATE DATA ---
+    const { title, category, description, latitude, longitude } = req.body;
+    const imageFiles = req.files; // This should be an array when using upload.array("images")
+    const userId = req.user._id;
+
+    if (!title || !category || !description || !latitude || !longitude) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // Images are optional, but if provided, they should be valid
+    if (imageFiles && imageFiles.length > 0) {
+      // Validate that files have the required properties
+      const validFiles = imageFiles.filter(
+        (file) => file.buffer && file.mimetype
+      );
+      if (validFiles.length === 0) {
+        return res.status(400).json({ error: "Invalid image files provided." });
+      }
+    }
+
+    // --- 2. UPLOAD IMAGES & REVERSE GEOCODE ---
+    const [imageUrls, address] = await Promise.all([
+      uploadImagesToAppwrite(imageFiles || []), // <-- Handle case when no images
+      reverseGeocode(latitude, longitude),
+    ]);
+
+    const defaultImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
+
+    // --- 3. CHECK FOR DUPLICATES ---
+    const DUPLICATE_SEARCH_RADIUS_METERS = 50;
+    const existingIssue = await Issue.findOne({
+      location: {
+        $near: {
+          $geometry: { type: "Point", coordinates: [longitude, latitude] },
+          $maxDistance: DUPLICATE_SEARCH_RADIUS_METERS,
+        },
+      },
+      category: category,
+      status: { $ne: "Resolved" },
+    });
+
+    // --- 4. EXECUTE FINAL LOGIC ---
+
+    // --- PATH A: DUPLICATE ISSUE FOUND ---
+    if (existingIssue) {
+      // Create a new report document
+      const newReport = new Report({
+        issue_id: existingIssue._id,
+        user_id: userId,
+        // For a duplicate, we can save all new images or just the first. Let's save all.
+        imageUrl: imageUrls.length > 0 ? imageUrls[0] : null,
+        description: description,
+      });
+      await newReport.save();
+
+      // Add the new report's ID to the existing issue's report list
+      existingIssue.report_id.push(newReport._id);
+      await existingIssue.save();
+
+      return res.status(200).json({
+        message: "Report added to existing issue.",
+        issue: existingIssue,
+      });
+    }
+
+    // --- PATH B: NO DUPLICATE FOUND (CREATE NEW ISSUE) ---
+    else {
+      // Create the new master issue document
+      const newIssue = new Issue({
+        title: title,
+        category: category,
+        location: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+        address: address,
+        firstReportedBy: userId,
+        defaultImageUrl: defaultImageUrl,
+        defaultDescription: description,
+        // report_id and follow_id will be populated next
+      });
+
+      // Create the first report document for this new issue
+      const firstReport = new Report({
+        issue_id: newIssue._id,
+        user_id: userId,
+        imageUrl: defaultImageUrl,
+        description: description,
+      });
+      await firstReport.save();
+
+      // Add the first report's ID to the new issue
+      newIssue.report_id.push(firstReport._id);
+
+      // Placeholder for Automated Department Routing
+      const department = await Department.findOne({
+        categoriesHandled: category,
+      });
+      if (department) {
+        newIssue.assignedTo = department._id;
+      }
+
+      await newIssue.save();
+
+      return res.status(201).json({
+        message: "New issue created successfully.",
+        issue: newIssue,
+      });
+    }
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error in createIssue controller: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -74,30 +148,6 @@ export const getIssueById = async (req, res) => {
   }
 };
 
-/**
- * Adds a report to an existing issue.
- *
- * Logic:
- * - Retrieves the issue by ID from the request parameters.
- * - Checks if the issue exists; if not, responds with 404.
- * - Checks if the current user has already reported this issue; if so, responds with 400.
- * - If this is the first report for the issue:
- *   - Expects `description` and `imageUrl` in the request body.
- *   - Creates a new Report document and saves it.
- *   - Adds a reference to the report in the issue's `reports` array.
- *   - Responds with 201 and the created report.
- * - If there are already reports for the issue:
- *   - Only adds the user and issue reference to the `reports` array (no new Report document).
- *   - Prevents duplicate reports from the same user.
- *   - Responds with 201 and a success message.
- * - Handles server errors with a 500 response.
- *
- * @async
- * @function addReportToIssue
- * @param {Object} req - Express request object, expects `params.id`, `user._id`, and optionally `body.description`, `body.imageUrl`.
- * @param {Object} res - Express response object.
- * @returns {Promise<void>}
- */
 export const addReportToIssue = async (req, res) => {
   try {
     const { id } = req.params;
@@ -180,7 +230,6 @@ export const followIssue = async (req, res) => {
       message: "Issue followed successfully.",
       followedIssues: user.followedIssues,
     });
-
   } catch (error) {
     res.status(500).json({ message: "Server error.", error: error.message });
   }

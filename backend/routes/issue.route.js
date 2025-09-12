@@ -13,12 +13,15 @@ import {
   assignIssueToDept,
   deleteIssue,
 } from "../controllers/issue.controller.js";
+import multer from "multer";
 
 const router = express.Router();
+// Multer setup for memory storage (no file size limit)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- Routes for All Logged-in Users ---
 
-router.post("/", protectRoute, createIssue);
+router.post("/", protectRoute, upload.array("images"), createIssue);
 router.get("/", protectRoute, getAllIssues);
 router.get("/:id", protectRoute, getIssueById);
 router.post("/:id/report", protectRoute, addReportToIssue);

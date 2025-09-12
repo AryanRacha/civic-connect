@@ -1,16 +1,16 @@
-// Appwrite client setup for backend usage
+// In a new file, e.g., 'config/appwrite.js'
+import { Client, Storage, ID } from "node-appwrite";
+import { InputFile } from "node-appwrite/file";
 
-import { Client, Storage, ID } from "appwrite";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-// Initialize Appwrite client
-const client = new Client();
 
-client
-  .setEndpoint(process.env.APPWRITE_ENDPOINT) // Your Appwrite endpoint
-  .setProject(process.env.APPWRITE_PROJECT_ID); // Your project ID
+// Initialize the Appwrite Client
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_ENDPOINT)
+  .setProject(process.env.APPWRITE_PROJECT_ID)
+  .setKey(process.env.APPWRITE_API_KEY);
 
-// Initialize Storage service
-const storage = new Storage(client);
-
-export { storage, ID };
+// Initialize the Appwrite services
+export const storage = new Storage(client);
+export { ID, InputFile }; // Export ID for creating unique file IDs

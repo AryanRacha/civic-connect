@@ -82,7 +82,12 @@ export default function LoginPage() {
     try {
       setIsSubmitting(true);
       await login(formData.email, formData.password, formData.role);
-      navigate("/dashboard");
+
+      if (formData.role === "citizen") {
+        navigate("/dashboard");
+      } else {
+        navigate("/admin-dashboard");
+      }
     } catch (error) {
       console.error("Login error:", error);
       // You could add error state here to show user-friendly error messages

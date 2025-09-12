@@ -87,9 +87,7 @@ export async function loginUser(req, res) {
     }
 
     if (role !== "citizen" && role !== "municipal_admin") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid role" });
+      return res.status(400).json({ success: false, message: "Invalid role" });
     }
 
     // Find user by email

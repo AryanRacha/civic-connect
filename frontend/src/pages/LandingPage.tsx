@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +32,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50" role="navigation" aria-label="Main">
+      <nav
+        className="bg-white border-b border-gray-200 sticky top-0 z-50"
+        role="navigation"
+        aria-label="Main"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -67,6 +73,14 @@ export default function LandingPage() {
               >
                 Contact
               </button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-teal-600 text-teal-600 hover:bg-teal-50 bg-transparent"
+                onClick={() => navigate("/admin-dashboard")}
+              >
+                Admin Preview
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -111,7 +125,9 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">CivicConnect</span>
+            <span className="text-lg font-bold text-gray-900">
+              CivicConnect
+            </span>
           </div>
           <button
             aria-label="Close menu"
@@ -161,6 +177,16 @@ export default function LandingPage() {
           <div className="pt-2 flex gap-2">
             <Button
               variant="outline"
+              className="flex-1 border-teal-600 text-teal-600 hover:bg-teal-50 bg-transparent text-sm"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/admin-dashboard");
+              }}
+            >
+              Admin Preview
+            </Button>
+            <Button
+              variant="outline"
               className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 bg-transparent"
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -202,7 +228,7 @@ export default function LandingPage() {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 xl:py-32 relative">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-6 lg:space-y-8">
+            <div className="space-y-6 lg:space-y-8 order-1">
               <div className="space-y-4 lg:space-y-6">
                 <div className="space-y-1 sm:space-y-2">
                   <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight overflow-hidden opacity-100 animate-typewriter-line1">
@@ -261,7 +287,7 @@ export default function LandingPage() {
             </div>
 
             {/* Hero Image Section */}
-            <div className="relative animate-fade-in-right mt-8 lg:mt-0">
+            <div className="relative animate-fade-in-right mt-8 lg:mt-0 order-2">
               <div className="bg-gradient-to-br from-blue-100 via-teal-100 to-cyan-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl border border-blue-200">
                 <img
                   src="https://images.pexels.com/photos/5699456/pexels-photo-5699456.jpeg?auto=compress&cs=tinysrgb&w=800"

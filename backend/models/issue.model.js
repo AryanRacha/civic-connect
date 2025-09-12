@@ -10,6 +10,7 @@ const issueSchema = new Schema(
     },
     category: {
       type: String,
+      enum: ["pothole", "traffic", "water supply", "garbage", "streetlight"],
       required: [true, "Category is required."],
     },
     status: {
@@ -17,6 +18,21 @@ const issueSchema = new Schema(
       required: true,
       enum: ["Submitted", "In Progress", "Resolved"],
       default: "Submitted",
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+    address: {
+      type: String,
+      required: true,
     },
     firstReportedBy: {
       type: Schema.Types.ObjectId,
@@ -29,12 +45,8 @@ const issueSchema = new Schema(
       required: [true, "Description is required."],
       trim: true,
     },
-    location: {
-      type: Schema.Types.ObjectId,
-      ref: "LocationIndex",
-    },
-    reports: [{ type: Schema.Types.ObjectId, ref: "Report" }],
-    follows: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    report_id: [{ type: Schema.Types.ObjectId, ref: "Report" }],
+    follow_id: [{ type: Schema.Types.ObjectId, ref: "User" }],
     assignedTo: { type: Schema.Types.ObjectId, ref: "Department" },
   },
   {
