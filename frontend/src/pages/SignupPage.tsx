@@ -92,16 +92,16 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch('http://localhost:3000/api/auth/signup', {
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          name: formData.fullName,
           email: formData.email,
-          phone: formData.phone,
           password: formData.password,
+          role_id: "sih_citizen"
         }),
       });
 

@@ -87,15 +87,23 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
     try {
-      await login(
-        formData[formData.loginType],
-        formData.password,
-        formData.role,
-        formData.loginType
-      );
+      const response = await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          [formData.loginType]: formData[formData.loginType],
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
+      }
 
       // Navigate to dashboard on successful login
       navigate("/dashboard");
@@ -212,6 +220,9 @@ export default function LoginPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="citizen">Citizen</SelectItem>
+                    <SelectItem value="municipal_admin">
+                      Municipal Admin
+                    </SelectItem>
                     <SelectItem value="municipal_admin">
                       Municipal Admin
                     </SelectItem>
