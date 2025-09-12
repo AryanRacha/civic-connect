@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-// import { useNavigate } from "react-router-dom" // REMOVED: Navigation handled by parent via prop
+import { useAuth } from "../contexts/AuthContext"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
 import { Input } from "../components/ui/input"
@@ -33,18 +33,17 @@ import { useNavigate } from "react-router-dom"
 
 // Accept the props in the component function
 export default function MyProfilePage() {
-  const navigate = useNavigate(); // Add this line
-  
-  // const navigate = useNavigate() // REMOVED: No longer needed for primary navigation
+  const navigate = useNavigate()
+  const { user, logout, updateUser } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
-    name: "Rahul Sharma",
-    email: "rahul.sharma@email.com",
-    phone: "+91 98765 43210",
-    address: "Sector 15, Chandigarh, Punjab",
-    joinDate: "January 2024",
-    bio: "Active citizen committed to improving community infrastructure and civic services.",
+    name: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    joinDate: user?.joinDate || "January 2024",
+    bio: user?.bio || "Active citizen committed to improving community infrastructure and civic services.",
   })
 
   // Mock user statistics
@@ -86,12 +85,20 @@ export default function MyProfilePage() {
   }
 
   const handleSave = () => {
+    // Update user data in auth context
+    updateUser({
+      fullName: profileData.name,
+      email: profileData.email,
+      phone: profileData.phone,
+      address: profileData.address,
+      bio: profileData.bio,
+    })
     setIsEditing(false)
     // Here you would typically save to backend
     console.log("Profile updated:", profileData)
   }
 
-  const getActivityIcon = (type: string, status: string) => {
+  const getActivityIcon = (type: string) => {
     if (type === "reported") return <Plus className="w-4 h-4 text-blue-600" />
     if (type === "resolved") return <CheckCircle className="w-4 h-4 text-green-600" />
     if (type === "upvoted") return <ThumbsUp className="w-4 h-4 text-orange-600" />
@@ -162,7 +169,7 @@ export default function MyProfilePage() {
           <Button
             variant="outline"
             className="w-full justify-start text-gray-600 border-gray-300 hover:bg-gray-50 bg-transparent"
-            onClick={() => navigate('/')} // Using the prop for Log Out navigation
+            onClick={logout}
           >
             <LogOut className="w-5 h-5 mr-3" />
             Log Out
@@ -369,7 +376,7 @@ export default function MyProfilePage() {
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0">{getActivityIcon(activity.type, activity.status)}</div>
+                    <div className="flex-shrink-0">{getActivityIcon(activity.type)}</div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{activity.title}</p>
                       <p className="text-sm text-gray-500">

@@ -1,112 +1,119 @@
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Button } from "../components/ui/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/Label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
-import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/Label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Shield, Eye, EyeOff, CheckCircle, X } from "lucide-react";
 
 interface FormData {
-  email: string
-  phone: string
-  password: string
-  role: string
-  loginType: "email" | "phone"
+  email: string;
+  phone: string;
+  password: string;
+  role: string;
+  loginType: "email" | "phone";
 }
 
 interface ValidationState {
-  email: boolean | null
-  phone: boolean | null
-  password: boolean | null
-  role: boolean | null
+  email: boolean | null;
+  phone: boolean | null;
+  password: boolean | null;
+  role: boolean | null;
 }
 
-type FieldName = keyof FormData
+type FieldName = keyof FormData;
 
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate();
+  const { login, isLoading } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: "",
     phone: "",
     password: "",
     role: "",
     loginType: "email",
-  })
+  });
   const [validation, setValidation] = useState<ValidationState>({
     email: null,
     phone: null,
     password: null,
     role: null,
-  })
+  });
 
   const validateField = (field: FieldName, value: string): boolean => {
     switch (field) {
       case "email":
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
       case "phone":
-        return /^[0-9]{10}$/.test(value)
+        return /^[0-9]{10}$/.test(value);
       case "password":
-        return value.length >= 6
+        return value.length >= 6;
       case "role":
-        return value.length > 0
+        return value.length > 0;
       default:
-        return false
+        return false;
     }
-  }
+  };
 
   const handleInputChange = (field: FieldName, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (value.length > 0) {
       setValidation((prev) => ({
         ...prev,
         [field]: validateField(field, value),
-      }))
+      }));
     } else {
-      setValidation((prev) => ({ ...prev, [field]: null }))
+      setValidation((prev) => ({ ...prev, [field]: null }));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          [formData.loginType]: formData[formData.loginType],
-          password: formData.password,
-          role: formData.role,
-        }),
-      });
+      await login(
+        formData[formData.loginType],
+        formData.password,
+        formData.role,
+        formData.loginType
+      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    console.log("Login data:", formData)
-    // For now, navigate to dashboard on successful login
-    navigate('/dashboard')
-  }
-catch (error) {
-  console.error('Login error:', error);
-}
-  }
+      // Navigate to dashboard on successful login
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      // You could add error state here to show user-friendly error messages
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const ValidationIcon = ({ isValid }: { isValid: boolean | null }) => {
-    if (isValid === null) return null
-    return isValid ? <CheckCircle className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />
-  }
+    if (isValid === null) return null;
+    return isValid ? (
+      <CheckCircle className="w-5 h-5 text-green-500" />
+    ) : (
+      <X className="w-5 h-5 text-red-500" />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center p-4">
@@ -125,43 +132,25 @@ catch (error) {
             </div>
           </div>
           <div className="space-y-2">
-            <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
-            <p className="text-gray-600">Sign in to your account to continue reporting and tracking civic issues.</p>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Welcome Back
+            </CardTitle>
+            <p className="text-gray-600">
+              Sign in to your account to continue reporting and tracking civic
+              issues.
+            </p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Login Type Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, loginType: "email" }))}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  formData.loginType === "email"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Email
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, loginType: "phone" }))}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  formData.loginType === "phone"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Phone
-              </button>
-            </div>
-
             {/* Email or Phone Input */}
             {formData.loginType === "email" ? (
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email ID
                 </Label>
                 <div className="relative">
@@ -181,7 +170,10 @@ catch (error) {
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="phone"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Phone Number
                 </Label>
                 <div className="relative">
@@ -203,17 +195,26 @@ catch (error) {
 
             {/* Role */}
             <div className="space-y-2">
-              <Label htmlFor="role" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="role"
+                className="text-sm font-medium text-gray-700"
+              >
                 Role
               </Label>
               <div className="relative">
-                <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)} required>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => handleInputChange("role", value)}
+                  required
+                >
                   <SelectTrigger className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="citizen">Citizen</SelectItem>
-                    <SelectItem value="municipal_admin">Municipal Admin</SelectItem>
+                    <SelectItem value="municipal_admin">
+                      Municipal Admin
+                    </SelectItem>
                     <SelectItem value="field_officer">Field Officer</SelectItem>
                   </SelectContent>
                 </Select>
@@ -225,7 +226,10 @@ catch (error) {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
                 Password
               </Label>
               <div className="relative">
@@ -234,7 +238,9 @@ catch (error) {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   className="pr-20 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
@@ -245,7 +251,11 @@ catch (error) {
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -253,20 +263,24 @@ catch (error) {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg"
+              disabled={isSubmitting || isLoading}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isSubmitting ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <button onClick={() => navigate('/signup')} className="text-blue-600 hover:text-blue-700 font-medium underline">
+            <button
+              onClick={() => navigate("/signup")}
+              className="text-blue-600 hover:text-blue-700 font-medium underline"
+            >
               Sign up here
             </button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

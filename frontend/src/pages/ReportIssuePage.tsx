@@ -1,6 +1,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext"
 import { Button } from "../components/ui/Button"
 import { Card } from "../components/ui/Card"
 import { Input } from "../components/ui/input"
@@ -11,6 +12,7 @@ import { MapPin, Loader2 } from "lucide-react"
 
 const ReportIssuePage: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
