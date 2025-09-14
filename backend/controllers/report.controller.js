@@ -1,62 +1,5 @@
-import { storage, ID } from "../config/appwrite.js";
 import Report from "../models/report.model.js";
-
-export const addReport = async (req, res) => {
-  const { description } = req.body;
-
-  try {
-    let imageUrls = [];
-    if (req.files && req.files.length > 0) {
-      // Upload each file to Appwrite Storage
-      for (const file of req.files) {
-        const appwriteFile = await storage.createFile(
-          process.env.APPWRITE_BUCKET_ID,
-          ID.unique(),
-          file.buffer,
-          file.mimetype
-        );
-        // Construct the public URL (adjust if you use file previews or permissions)
-        const url = `${process.env.APPWRITE_ENDPOINT}/storage/buckets/${process.env.APPWRITE_BUCKET_ID}/files/${appwriteFile.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
-        imageUrls.push(url);
-      }
-    }
-
-    const report = await Report.create({
-      title,
-      description,
-      location,
-      user_id: req.user._id,
-      images: imageUrls,
-    });
-    res.status(201).json(report);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-// Reusable image preview function
-/**
- * Converts an image Buffer to a base64 data URL for previewing in the frontend,
- * or returns the input string if it's already a URL or data URL.
- * @example
- * // Usage in frontend (React):
- * <img src={previewImage(buffer)} alt="Preview" />
- */
-export const previewImage = (input, mimetype = "image/png") => {
-  try {
-    if (Buffer.isBuffer(input)) {
-      const base64 = input.toString("base64");
-      return `data:${mimetype};base64,${base64}`;
-    }
-    if (typeof input === "string") {
-      return input;
-    }
-    throw new Error(
-      "Invalid input for image preview: input must be a Buffer or a string URL"
-    );
-  } catch (error) {
-    throw new Error(`Failed to preview image: ${error.message}`);
-  }
-};
+import Issue from "../models/issue.model.js";
 
 export const getAllReports = async (req, res) => {
   try {
@@ -67,14 +10,27 @@ export const getAllReports = async (req, res) => {
   }
 };
 
+// You'll need to import the Issue model in this file as well
+
 export const getUserReports = async (req, res) => {
   try {
-    const reports = await Report.find({ user_id: req.user._id }).populate(
-      "user_id"
+    const userId = req.user._id;
+
+    // Find all reports submitted by the user
+    const userReports = await Report.find({ user_id: userId }).select(
+      "issue_id"
     );
-    res.status(200).json(reports);
+    const issueIdsFromReports = userReports.map((report) => report.issue_id);
+
+    // Find all issues where the user was the first reporter or contributed a report
+    const issues = await Issue.find({
+      $or: [{ user_id: userId }, { _id: { $in: issueIdsFromReports } }],
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(issues);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error in getMyReportedIssues controller: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

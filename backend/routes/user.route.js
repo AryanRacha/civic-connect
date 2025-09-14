@@ -6,6 +6,7 @@ import {
   deleteMyAccount,
   getMyReportedIssues,
   getFollowedIssues,
+  getNearbyLocations,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -15,6 +16,6 @@ router.put("/profile", protectRoute, updateMyProfile);
 router.delete("/profile", protectRoute, deleteMyAccount);
 router.get("/my-issues", protectRoute, getMyReportedIssues);
 router.get("/followed-issues", protectRoute, getFollowedIssues);
-
+router.get("/locations-near-me", protectRoute, getNearbyLocations);
 
 export default router;

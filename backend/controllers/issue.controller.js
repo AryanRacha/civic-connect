@@ -124,14 +124,13 @@ export const createIssue = async (req, res) => {
 
 export const getAllIssues = async (req, res) => {
   try {
-    const issues = await Issue.find({})
-      .populate("reports")
-      .populate("firstReportedBy", "_id name email")
-      .populate("assignedTo", "_id name")
-      .populate("follows", "_id name email");
+    // Find all issues and sort them by creation date (newest first)
+    const issues = await Issue.find({}).sort({ createdAt: -1 });
+
     res.status(200).json(issues);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error in getAllIssues controller: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

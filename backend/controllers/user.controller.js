@@ -1,7 +1,6 @@
-
 import User from "../models/user.model.js";
 import Issue from "../models/issue.model.js";
-
+import { findIssuesNearUser } from "../utils/location.js";
 // GET /api/user/profile
 export async function getMyProfile(req, res) {
   try {
@@ -48,15 +47,12 @@ export async function getMyReportedIssues(req, res) {
 
     // Fetch the actual issues from the Issue model
     const reports = await Issue.find({ _id: { $in: user.reportedIssues } });
-    
+
     res.status(200).json(reports);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
-
-
-
 
 // GET /api/user/followed-issues
 export async function getFollowedIssues(req, res) {
@@ -73,6 +69,15 @@ export async function getFollowedIssues(req, res) {
   }
 }
 
+export async function getNearbyLocations(req, res) {
+  const { latitude, longitude } = req.query;
+  if (!latitude || !longitude) {
+    return res.status(400).json({
+      message:
+        "Unable to get Users current location pls ensure that your location is on",
+    });
+  }
 
-
-
+  const issues = await findIssuesNearUser(Number(latitude), Number(longitude));
+  res.status(200).json(issues);
+}

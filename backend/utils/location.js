@@ -116,3 +116,18 @@ export function prepareMapData(locations) {
     })),
   };
 }
+
+// Find all issues within a 3 km radius of the user's location
+export const findIssuesNearUser = async (lat, lng) => {
+  // Assumes you have an Issue model with a 'location' field (GeoJSON Point)
+  const radiusMeters = 3000; // 3 km
+  const issues = await Issue.find({
+    location: {
+      $near: {
+        $geometry: { type: "Point", coordinates: [lng, lat] },
+        $maxDistance: radiusMeters,
+      },
+    },
+  });
+  return issues;
+};
