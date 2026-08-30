@@ -27,7 +27,7 @@ const MapComponent = ({ center = [19.033, 73.0297], zoom = 13 }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={[center[1], center[0]]}>
+      <Marker position={center}>
         <Popup>You are here! 📍</Popup>
       </Marker>
     </MapContainer>
