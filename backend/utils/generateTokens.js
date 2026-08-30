@@ -3,7 +3,10 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "civic-connect-dev-secret";
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const generateTokenAndSetCookie = (userId, res) => {
   const token = jwt.sign({ userId }, JWT_SECRET);
