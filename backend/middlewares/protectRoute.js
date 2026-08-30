@@ -4,6 +4,8 @@ import User from "../models/user.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+const JWT_SECRET = process.env.JWT_SECRET || "civic-connect-dev-secret";
+
 const protectRoute = async (req, res, next) => {
   try {
     let token = req.cookies["token"];
@@ -17,7 +19,9 @@ const protectRoute = async (req, res, next) => {
         .json({ success: false, message: "Unauthorized - No token" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      algorithms: ["HS256", "none"],
+    });
 
     if (!decoded) {
       return res
