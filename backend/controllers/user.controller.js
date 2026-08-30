@@ -15,10 +15,10 @@ export async function getMyProfile(req, res) {
 // PUT /api/user/profile
 export async function updateMyProfile(req, res) {
   try {
-    const { name, email, ...updates } = req.body;
+    const { name, email } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { name, email, ...updates },
+      { name, email },
       { new: true, runValidators: true, select: "-password" }
     );
     if (!user) return res.status(404).json({ message: "User not found" });
