@@ -20,7 +20,7 @@ const protectRoute = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: ["HS256", "none"],
+      algorithms: ["HS256"],
     });
 
     if (!decoded) {
