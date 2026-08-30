@@ -44,7 +44,6 @@ export const createIssue = async (req, res) => {
           $maxDistance: DUPLICATE_SEARCH_RADIUS_METERS,
         },
       },
-      category: category,
       status: { $ne: "Resolved" },
     });
 
@@ -80,7 +79,7 @@ export const createIssue = async (req, res) => {
         category: category,
         location: {
           type: "Point",
-          coordinates: [longitude, latitude],
+          coordinates: [latitude, longitude],
         },
         address: address,
         firstReportedBy: userId,

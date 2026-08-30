@@ -222,7 +222,10 @@ export default function BrowseIssuesPage() {
                         </span>
                       </div>
                       <h3 className="font-bold text-gray-900 text-lg mb-2">{issue.title}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{issue.description}</p>
+                      <p
+                        className="text-gray-600 text-sm leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: issue.description }}
+                      />
                     </div>
                   </div>
 

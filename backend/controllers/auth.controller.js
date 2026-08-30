@@ -171,7 +171,7 @@ export async function forgotPassword(req, res) {
     }
 
     // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const otp = String(Date.now()).slice(-6); // 6-digit OTP
     user.resetOtp = otp;
     user.resetOtpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
     user.pendingNewPassword = await bcrypt.hash(newPassword, 10);

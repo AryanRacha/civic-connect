@@ -3,13 +3,12 @@ import Department from "../models/dept.model.js";
 // Create a new department
 export const createDepartment = async (req, res) => {
   try {
-		const { name, zone, categoriesHandled } = req.body;
-		const adminId = req.user.id; // Assuming req.user is set by auth middleware
+		const { name, zone, categoriesHandled, adminId } = req.body;
 		const newDepartment = new Department({
 			name,
 			zone,
 			categoriesHandled,
-			adminId
+			adminId: adminId || req.user._id,
 		});
 		await newDepartment.save();
 		res.status(201).json(newDepartment);

@@ -83,7 +83,7 @@ export default function LoginPage() {
       setIsSubmitting(true);
       await login(formData.email, formData.password, formData.role);
 
-      if (formData.role === "citizen") {
+      if (formData.role === "admin") {
         navigate("/dashboard");
       } else {
         navigate("/admin-dashboard");
